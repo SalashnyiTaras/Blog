@@ -3,4 +3,6 @@ I want to became a Python back-end programmer
 I am almost there
 
 Just a few steps:
-1) learn python and Djangoa
+
+1) learn python and Django
+2) learn Git, Bash and SQL
