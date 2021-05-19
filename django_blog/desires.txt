@@ -2,4 +2,6 @@ I want to became a Python back-end programmer
 
 I am almost there
 
-Just a few steps
+Just a few steps:
+
+2) learn Git, Bash and SQL
