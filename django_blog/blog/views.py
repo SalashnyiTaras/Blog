@@ -1,23 +1,26 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, reverse
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect, HttpResponse
 
 
 class PostListView(ListView):
     model = Post
-    # TODO: how to check which attributes are built-in, for instance how can I know that it is enough to set
-    #       paginate_by in order to do pagination.
     # TODO: What a hell is page.obj in home.html page( when creating paginating buttons )
-    # be default ListView renders template <app>/<model>_<viewtype>.html - blog/post_list.html.
-    # instead of renaming our template we can set a variable template_name
     template_name = 'blog/home.html'
-    # by default List view is going to loop through variables named "objects"
-    # so we need to change variable name to 'posts'
     context_object_name = 'posts'
     ordering = ['-date_posted']
     paginate_by = 3
+
+    def get_context_data(self, **kwargs):
+        # it shows total amount of likes
+        context = super(PostListView, self).get_context_data(**kwargs)
+        likes_var = get_object_or_404(Post, id=kwargs['id'])
+        total_likes = likes_var.total_likes()
+        context["total_likes"] = total_likes
+        return context
 
 
 class UserPostListView(ListView):
@@ -26,20 +29,23 @@ class UserPostListView(ListView):
     context_object_name = 'posts'
     paginate_by = 4
 
-    def get_queryset(self):
-        # TODO: how can I get data from User which is logged in and who makes some requests, for instance here we
-        #       recieve a username from that user
-        user = get_object_or_404(User, username=self.kwargs.get('username'))
-        return Post.objects.filter(author=user).order_by('-date_posted')
-
 
 class PostDetailView(DetailView):
+    # TODO: what is slag? get_slug_field()?
     model = Post
+
+    def get_context_data(self, **kwargs):
+        # it shows total amount of likes
+        context = super(PostDetailView, self).get_context_data(**kwargs)
+        likes_var = get_object_or_404(Post, id=self.kwargs['pk'])
+        total_likes = likes_var.total_likes()
+        context["total_likes"] = total_likes
+        return context
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['title', 'content']
+    fields = ['title', 'content', 'image']
 
     def form_valid(self, form):
         # we set that author of current form instance should be logged in user
@@ -50,7 +56,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['title', 'content']
+    fields = ['title', 'content', 'image']
 
     def form_valid(self, form):   # ?????
         form.instance.author = self.request.user
@@ -74,9 +80,20 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return False
 
 
-def about(request):
-    return render(request, 'blog/about.html')
-
-
 def donate(request):
     return render(request, 'blog/donate.html')
+
+
+def like_detail_view(request, pk):
+    # it is a button, to add a like
+    post = get_object_or_404(Post, id=request.POST.get('post_id'))
+    post.likes.add(request.user)
+    return HttpResponseRedirect(reverse('post-detail', args=[str(pk)]))
+
+
+def like_list_view(request, pk):
+    # it is a button, to add a like
+    post = get_object_or_404(Post, id=request.POST.get('post_id'))
+    post.likes.add(request.user)
+    return HttpResponseRedirect(reverse('blog-home'))
+
