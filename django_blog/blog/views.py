@@ -14,14 +14,47 @@ class PostListView(ListView):
     ordering = ['-date_posted']
     paginate_by = 3
 
-    def get_context_data(self, **kwargs):
-        # it shows total amount of likes
-        context = super(PostListView, self).get_context_data(**kwargs)
-        likes_var = get_object_or_404(Post, id=kwargs['id'])
-        total_likes = likes_var.total_likes()
-        context["total_likes"] = total_likes
-        return context
+    # def get_context_data(self, **kwargs):
+    #     # it shows total amount of likes
+    #     context = super(PostListView, self).get_context_data(**kwargs)
+    #     likes_var = get_object_or_404(Post, id=kwargs['id'])
+    #     total_likes = likes_var.total_likes()
+    #     context["total_likes"] = total_likes
+    #     return context
 
+
+class PostListViewByLikes(ListView):
+    model = Post
+    # TODO: What a hell is page.obj in home.html page( when creating paginating buttons )
+    template_name = 'blog/home.html'
+    context_object_name = 'posts'
+    ordering = ['-likes']
+    paginate_by = 3
+
+    # def get_context_data(self, **kwargs):
+    #     # it shows total amount of likes
+    #     context = super(PostListViewByLikes, self).get_context_data(**kwargs)
+    #     likes_var = get_object_or_404(Post, id=kwargs['id'])
+    #     total_likes = likes_var.total_likes()
+    #     context["total_likes"] = total_likes
+    #     return context
+
+
+class PostListViewSpecialForYou(ListView):
+    model = Post
+    # TODO: What a hell is page.obj in home.html page( when creating paginating buttons )
+    template_name = 'blog/home.html'
+    context_object_name = 'posts'
+    ordering = ['?']
+    paginate_by = 3
+
+    # def get_context_data(self, **kwargs):
+    #     # it shows total amount of likes
+    #     context = super(PostListViewForYou, self).get_context_data(**kwargs)
+    #     likes_var = get_object_or_404(Post, id=kwargs['id'])
+    #     total_likes = likes_var.total_likes()
+    #     context["total_likes"] = total_likes
+    #     return context
 
 class UserPostListView(ListView):
     model = Post
