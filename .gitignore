@@ -1,1 +1,5 @@
 venv/
+*.iml
+.idea/modules.xml
+gradle.xml
+.idea/libraries
