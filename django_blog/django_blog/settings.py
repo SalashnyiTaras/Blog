@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     # 'storages'  # thing needed for django to store media on AWS s3
 ]
 
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'django_blog.urls'
@@ -143,14 +145,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('mail')
 EMAIL_HOST_PASSWORD = os.environ.get('mail_pass')
 
-# # variables which we need in order to use s3 services
-# AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-# AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-
-# # variable which turns off overwriting uploaded files with same names
-# AWS_S3_FILE_OVERWRITE = False
-# AWS_DEFAULT_ACL = None
-# AWS_S3_REGION_NAME = 'us-east-2'
-# AWS_S3_SIGNATURE_VERSION = 's3v4'
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

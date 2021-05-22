@@ -10,14 +10,13 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username}' profile"
 
-# I commented out resizing of images because with  this method there can be possibly some issues when using s3
+    def save(self, *args, **kwargs):
+        # this method there can be possibly some issues when using s3
+        super().save(*args, **kwargs)
 
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #
-    #     img = Image.open(self.image.path)
-    #
-    #     if img.height > 300 or img.width > 300:
-    #         output_size = (300, 300)
-    #         img.thumbnail(output_size)
-    #         img.save(self.image.path)
+        img = Image.open(self.image.path)
+
+        if img.height > 300 or img.width > 300:
+            output_size = (300, 300)
+            img.thumbnail(output_size)
+            img.save(self.image.path)

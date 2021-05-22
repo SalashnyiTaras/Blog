@@ -17,7 +17,7 @@
 
           <form action="{% url 'like_list_view' post.pk %}" method="POST"> {% csrf_token %}
             <button type="submit" name="post_id" value="{{ post.id }}" class="btn btn-primary btn-sm">Like</button>
-            <small class="">{{ total_likes }} Likes </small>
+            <small class="">{{ post.likes_number }} Likes </small>
           </form>
 
         </article>

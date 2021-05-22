@@ -17,7 +17,6 @@
         {% endif %}
 
           <form action="{% url 'like_detail_view' object.pk %}" method="POST"> {% csrf_token %}
-<!--       try to put <input> instead of <button>-->
             <button type="submit" name="post_id" value="{{ object.id }}" class="btn btn-primary btn-sm">Like</button>
             <small class="">{{ total_likes }} Likes</small>
           </form>

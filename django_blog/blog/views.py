@@ -1,60 +1,35 @@
-from django.shortcuts import render, get_object_or_404, reverse
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count
+from django.shortcuts import get_object_or_404, reverse
 from .models import Post
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse
 
 
 class PostListView(ListView):
     model = Post
-    # TODO: What a hell is page.obj in home.html page( when creating paginating buttons )
     template_name = 'blog/home.html'
     context_object_name = 'posts'
     ordering = ['-date_posted']
-    paginate_by = 3
+    paginate_by = 4
 
-    # def get_context_data(self, **kwargs):
-    #     # it shows total amount of likes
-    #     context = super(PostListView, self).get_context_data(**kwargs)
-    #     likes_var = get_object_or_404(Post, id=kwargs['id'])
-    #     total_likes = likes_var.total_likes()
-    #     context["total_likes"] = total_likes
-    #     return context
+    def get_queryset(self):
+        qs = super(PostListView, self).get_queryset()
+        return qs.annotate(likes_number=Count('likes'))
 
 
 class PostListViewByLikes(ListView):
     model = Post
-    # TODO: What a hell is page.obj in home.html page( when creating paginating buttons )
     template_name = 'blog/home.html'
     context_object_name = 'posts'
-    ordering = ['-likes']
-    paginate_by = 3
+    paginate_by = 4
 
-    # def get_context_data(self, **kwargs):
-    #     # it shows total amount of likes
-    #     context = super(PostListViewByLikes, self).get_context_data(**kwargs)
-    #     likes_var = get_object_or_404(Post, id=kwargs['id'])
-    #     total_likes = likes_var.total_likes()
-    #     context["total_likes"] = total_likes
-    #     return context
+    def get_queryset(self):
+        qs = super(PostListViewByLikes, self).get_queryset()
+        return qs.annotate(likes_number=Count('likes')).order_by('-likes_number')
 
-
-class PostListViewSpecialForYou(ListView):
-    model = Post
-    # TODO: What a hell is page.obj in home.html page( when creating paginating buttons )
-    template_name = 'blog/home.html'
-    context_object_name = 'posts'
-    ordering = ['?']
-    paginate_by = 3
-
-    # def get_context_data(self, **kwargs):
-    #     # it shows total amount of likes
-    #     context = super(PostListViewForYou, self).get_context_data(**kwargs)
-    #     likes_var = get_object_or_404(Post, id=kwargs['id'])
-    #     total_likes = likes_var.total_likes()
-    #     context["total_likes"] = total_likes
-    #     return context
 
 class UserPostListView(ListView):
     model = Post
@@ -62,13 +37,16 @@ class UserPostListView(ListView):
     context_object_name = 'posts'
     paginate_by = 4
 
+    def get_queryset(self):
+        user = get_object_or_404(User, username=self.kwargs.get('username'))
+        return Post.objects.filter(author=user).order_by('-date_posted')
+
 
 class PostDetailView(DetailView):
     # TODO: what is slag? get_slug_field()?
     model = Post
 
     def get_context_data(self, **kwargs):
-        # it shows total amount of likes
         context = super(PostDetailView, self).get_context_data(**kwargs)
         likes_var = get_object_or_404(Post, id=self.kwargs['pk'])
         total_likes = likes_var.total_likes()
@@ -81,19 +59,17 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     fields = ['title', 'content', 'image']
 
     def form_valid(self, form):
-        # we set that author of current form instance should be logged in user
         form.instance.author = self.request.user
-        # basically we run form.valid() on our parent class after we set a author
-        return super().form_valid(form)
+        return super(PostCreateView, self).form_valid(form)
 
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
     fields = ['title', 'content', 'image']
 
-    def form_valid(self, form):   # ?????
+    def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        return super(PostUpdateView, self).form_valid(form)
 
     def test_func(self):
         post = self.get_object()
@@ -113,19 +89,15 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return False
 
 
-def donate(request):
-    return render(request, 'blog/donate.html')
-
-
+@login_required
 def like_detail_view(request, pk):
-    # it is a button, to add a like
     post = get_object_or_404(Post, id=request.POST.get('post_id'))
     post.likes.add(request.user)
     return HttpResponseRedirect(reverse('post-detail', args=[str(pk)]))
 
 
-def like_list_view(request, pk):
-    # it is a button, to add a like
+@login_required
+def like_list_view(request):
     post = get_object_or_404(Post, id=request.POST.get('post_id'))
     post.likes.add(request.user)
     return HttpResponseRedirect(reverse('blog-home'))
